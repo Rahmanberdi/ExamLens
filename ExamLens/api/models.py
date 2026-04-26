@@ -33,16 +33,16 @@ class Exam(models.Model):
         return f'{self.subject.name} - {self.name} at {self.exam_date}'
 
 class Question(models.Model):
-    class QuestionType(models.TextChoices):
-        SINGLE_CHOICE = 'single_choice', '单选题'
-        MULTIPLE_CHOICE = 'multiple_choice', '多选题'
-        TRUE_FALSE = 'true_false', '判断题'
-        FILL_BLANK = 'fill_blank', '填空题'
-
+    QUESTION_TYPES_CHOICES = [
+        ('single_choice', '单选题'),
+        ('multiple_choice', '多选题'),
+        ('true_false', '判断题'),
+        ('fill_blank', '填空题'),
+    ]
 
     exam = models.ForeignKey(Exam,on_delete=models.CASCADE,related_name='questions')
     question_number = models.PositiveIntegerField()
-    question_type = models.CharField(max_length=20,choices=QuestionType.choices,default=QuestionType.SINGLE_CHOICE)
+    question_type = models.CharField(max_length=20,choices=QUESTION_TYPES_CHOICES)
     content = models.TextField()
     options = models.JSONField(
         default=dict,
