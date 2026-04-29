@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { teacherApi } from '../../api/teacher';
@@ -10,11 +10,11 @@ import { EndpointFooter } from '../../shared/EndpointFooter';
 import { getPayload } from '../../api/auth';
 
 function useDebounce(fn: (v: string) => void, delay: number) {
-  let timer: ReturnType<typeof setTimeout>;
+  const timer = useRef<ReturnType<typeof setTimeout>>(null);
   return useCallback((v: string) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(v), delay);
-  }, []);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => fn(v), delay);
+  }, [fn, delay]);
 }
 
 export function TeacherWrongQuestions() {

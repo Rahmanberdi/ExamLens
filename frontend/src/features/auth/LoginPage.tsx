@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { login } from '../../api/auth';
 import { ControlsBar } from '../../shared/ControlsBar';
-import { FormField, inputStyle } from '../../shared/FormField';
+import { FormField } from '../../shared/FormField';
+import { inputStyle } from '../../shared/styles';
 
 export function LoginPage() {
   const { t } = useTranslation();
