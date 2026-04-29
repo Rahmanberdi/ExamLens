@@ -13,6 +13,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "ExamLens/ExamLens/wsgi.py" },
     { "src": "/admin/(.*)", "dest": "ExamLens/ExamLens/wsgi.py" },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "frontend/dist/index.html" }
   ]
 }
