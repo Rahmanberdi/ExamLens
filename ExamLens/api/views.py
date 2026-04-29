@@ -14,8 +14,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
+class CreateUserView(generics.ListCreateAPIView):
+    queryset = User.objects.exclude(role=User.Role.ADMIN).order_by('id')
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
 
