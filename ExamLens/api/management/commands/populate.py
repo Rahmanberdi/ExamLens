@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.core.management.base import BaseCommand
-from api.models import User, Subject, Exam, Question
+from api.models import User, Subject, Exam, Question, StudentAnswer
 
 
 class Command(BaseCommand):
@@ -9,6 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self._create_users()
         self._create_subjects_and_exams()
+        self._create_student_answers()
         self.stdout.write(self.style.SUCCESS('Database populated successfully.'))
 
     def _create_users(self):
@@ -64,6 +65,41 @@ class Command(BaseCommand):
                  content='牛顿第一定律又称___定律。',
                  options={}, correct_answer=['惯性'], max_score=Decimal('5.00')),
         ])
+
+    def _create_student_answers(self):
+        students = {u.username: u for u in User.objects.filter(role=User.Role.STUDENT)}
+        s1, s2, s3 = students['student1'], students['student2'], students['student3']
+
+        # answers[question_pk] = {student: selected_answer}
+        # mix of correct and wrong so teacher view has data
+        answers_map = [
+            # math q1 correct=['B']: s1 correct, s2 wrong, s3 correct
+            ('数学', 1, {s1: ['B'], s2: ['A'], s3: ['B']}),
+            # math q2 correct=['A','C']: s1 correct, s2 wrong, s3 wrong
+            ('数学', 2, {s1: ['A', 'C'], s2: ['A', 'B'], s3: ['B', 'D']}),
+            # math q3 correct=[True]: s1 correct, s2 correct, s3 wrong
+            ('数学', 3, {s1: [True], s2: [True], s3: [False]}),
+            # math q4 correct=['3.14']: s1 wrong, s2 correct, s3 wrong
+            ('数学', 4, {s1: ['3.15'], s2: ['3.14'], s3: ['3.1']}),
+            # physics q1 correct=['A']: s1 correct, s2 wrong, s3 correct
+            ('物理', 1, {s1: ['A'], s2: ['B'], s3: ['A']}),
+            # physics q2 correct=['A','C']: s1 wrong, s2 correct, s3 wrong
+            ('物理', 2, {s1: ['A', 'B'], s2: ['A', 'C'], s3: ['C', 'D']}),
+            # physics q3 correct=[True]: s1 correct, s2 wrong, s3 correct
+            ('物理', 3, {s1: [True], s2: [False], s3: [True]}),
+            # physics q4 correct=['惯性']: s1 correct, s2 wrong, s3 correct
+            ('物理', 4, {s1: ['惯性'], s2: ['运动'], s3: ['惯性']}),
+        ]
+
+        for subject_name, q_number, student_answers in answers_map:
+            question = Question.objects.get(exam__subject__name=subject_name, question_number=q_number)
+            for student, selected in student_answers.items():
+                StudentAnswer.objects.get_or_create(
+                    question=question,
+                    student=student,
+                    defaults={'selected_answer': selected},
+                )
+        self.stdout.write('  Created student answers')
 
     def _create_exam(self, subject, name, exam_date, questions):
         exam, created = Exam.objects.get_or_create(

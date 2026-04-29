@@ -13,6 +13,7 @@ class User(AbstractUser):
         default=Role.STUDENT,
     )
     real_name = models.CharField(max_length=100, blank=True)
+    class_number = models.CharField(max_length=50, blank=True)
 
 
 class Subject(models.Model):
