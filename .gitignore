@@ -11,9 +11,12 @@ db.sqlite3
 
 # Node
 node_modules/
-frontend/dist/
+# frontend/dist/ — committed so Vercel can serve the pre-built SPA
 
 # IDE
 .idea/
 .vscode/
 *.iml
+
+.vercel
+.env*.local
