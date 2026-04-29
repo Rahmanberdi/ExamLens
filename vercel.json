@@ -1,22 +1,18 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "ExamLens/ExamLens/wsgi.py": {
-      "runtime": "python3.12"
-    }
-  },
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/ExamLens/ExamLens/wsgi.py"
+      "src": "ExamLens/ExamLens/wsgi.py",
+      "use": "@vercel/python"
     },
     {
-      "source": "/admin/(.*)",
-      "destination": "/ExamLens/ExamLens/wsgi.py"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/dist/index.html"
+      "src": "frontend/dist/**",
+      "use": "@vercel/static"
     }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "ExamLens/ExamLens/wsgi.py" },
+    { "src": "/admin/(.*)", "dest": "ExamLens/ExamLens/wsgi.py" },
+    { "src": "/(.*)", "dest": "frontend/dist/index.html" }
   ]
 }
