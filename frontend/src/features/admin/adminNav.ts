@@ -16,5 +16,6 @@ export function useAdminNav() {
     { label: t('questions'), to: '/admin/questions', count: questions?.length },
     { label: t('answers'), to: '/admin/answers', count: answers?.length },
     { label: t('students'), to: '/admin/students', count: students?.length },
+    { label: t('import'), to: '/admin/import' },
   ];
 }

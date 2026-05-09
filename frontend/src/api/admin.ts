@@ -45,6 +45,11 @@ export interface Student {
   class_number: string;
 }
 
+export interface ImportResult {
+  imported: number;
+  skipped: { row: number; error: string }[];
+}
+
 export const adminApi = {
   getSubjects: () => client.get<Subject[]>('/admin/subjects/').then((r) => r.data),
   createSubject: (data: { name: string; description: string }) =>
@@ -72,4 +77,16 @@ export const adminApi = {
     role: string;
     class_number: string;
   }) => client.post<Student>('/admin/students/', data).then((r) => r.data),
+
+  importQuestions: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return client.post<ImportResult>('/admin/import/questions/', form).then((r) => r.data);
+  },
+
+  importAnswers: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return client.post<ImportResult>('/admin/import/answers/', form).then((r) => r.data);
+  },
 };

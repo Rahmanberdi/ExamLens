@@ -114,5 +114,20 @@
   "optionB": "Вариант B",
   "optionC": "Вариант C",
   "optionD": "Вариант D",
-  "newAccount": "Новый аккаунт"
+  "newAccount": "Новый аккаунт",
+  "import": "Импорт",
+  "importQuestions": "Импорт вопросов",
+  "importAnswers": "Импорт ответов студентов",
+  "downloadTemplate": "Скачать шаблон",
+  "chooseFile": "Выбрать .csv или .xlsx",
+  "importBtn": "Импортировать",
+  "importing": "Импорт…",
+  "imported": "Импортировано",
+  "skipped": "Пропущено",
+  "noSkipped": "Ошибок нет",
+  "columnFormat": "Столбцы",
+  "autoCreated": "создаётся автоматически",
+  "mustExist": "должен существовать",
+  "required": "обязательно",
+  "multipleAnswerHint": "несколько ответов через |, напр. A|C"
 }

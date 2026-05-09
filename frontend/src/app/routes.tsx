@@ -8,6 +8,7 @@ import { AdminQuestions } from '../features/admin/AdminQuestions';
 import { AdminQuestionEditor } from '../features/admin/AdminQuestionEditor';
 import { AdminAnswers } from '../features/admin/AdminAnswers';
 import { AdminStudents } from '../features/admin/AdminStudents';
+import { AdminImport } from '../features/admin/AdminImport';
 import { TeacherQuestionsPage } from '../features/teacher/TeacherQuestionsPage';
 import { TeacherSubjects } from '../features/teacher/TeacherSubjects';
 import { TeacherExams } from '../features/teacher/TeacherExams';
@@ -39,6 +40,7 @@ export function AppRoutes() {
       <Route path="/admin/questions/:id/edit" element={<AuthGuard role="admin"><AdminQuestionEditor /></AuthGuard>} />
       <Route path="/admin/answers" element={<AuthGuard role="admin"><AdminAnswers /></AuthGuard>} />
       <Route path="/admin/students" element={<AuthGuard role="admin"><AdminStudents /></AuthGuard>} />
+      <Route path="/admin/import" element={<AuthGuard role="admin"><AdminImport /></AuthGuard>} />
 
       <Route path="/teacher" element={<AuthGuard role="teacher"><TeacherQuestionsPage /></AuthGuard>} />
       <Route path="/teacher/questions" element={<Navigate to="/teacher" replace />} />

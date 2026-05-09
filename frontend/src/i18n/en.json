@@ -114,5 +114,20 @@
   "optionB": "Option B",
   "optionC": "Option C",
   "optionD": "Option D",
-  "newAccount": "New account"
+  "newAccount": "New account",
+  "import": "Import",
+  "importQuestions": "Import Questions",
+  "importAnswers": "Import Student Answers",
+  "downloadTemplate": "Download Template",
+  "chooseFile": "Choose .csv or .xlsx",
+  "importBtn": "Import",
+  "importing": "Importing…",
+  "imported": "Imported",
+  "skipped": "Skipped",
+  "noSkipped": "No errors",
+  "columnFormat": "Columns",
+  "autoCreated": "auto-created",
+  "mustExist": "must exist",
+  "required": "required",
+  "multipleAnswerHint": "multiple choice answers: A|C"
 }

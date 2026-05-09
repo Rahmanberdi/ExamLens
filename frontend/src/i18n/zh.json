@@ -114,5 +114,20 @@
   "optionB": "选项 B",
   "optionC": "选项 C",
   "optionD": "选项 D",
-  "newAccount": "新建账号"
+  "newAccount": "新建账号",
+  "import": "导入",
+  "importQuestions": "导入题目",
+  "importAnswers": "导入学生答题",
+  "downloadTemplate": "下载模板",
+  "chooseFile": "选择 .csv 或 .xlsx 文件",
+  "importBtn": "导入",
+  "importing": "导入中…",
+  "imported": "已导入",
+  "skipped": "已跳过",
+  "noSkipped": "无错误",
+  "columnFormat": "字段说明",
+  "autoCreated": "不存在则自动创建",
+  "mustExist": "必须已存在",
+  "required": "必填",
+  "multipleAnswerHint": "多选答案用竖线分隔，如 A|C"
 }
