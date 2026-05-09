@@ -1,107 +1,128 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../api/admin';
 import { Shell } from '../../shared/Shell';
 import { Th, Td, EmptyRow, SkeletonRows } from '../../shared/Table';
 import { FormField } from '../../shared/FormField';
-import { inputStyle } from '../../shared/styles';
-import { EndpointFooter } from '../../shared/EndpointFooter';
+import { inputStyle, btnPrimary, btnGhost } from '../../shared/styles';
 import { getPayload } from '../../api/auth';
 import { useAdminNav } from './adminNav';
+
+const mono = "'JetBrains Mono', monospace";
 
 export function AdminSubjects() {
   const { t } = useTranslation();
   const user = getPayload()!;
   const nav = useAdminNav();
+  const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [formError, setFormError] = useState('');
 
   const { data, isLoading } = useQuery({ queryKey: ['subjects'], queryFn: adminApi.getSubjects });
+  const { data: exams } = useQuery({ queryKey: ['exams'], queryFn: adminApi.getExams });
+  const examCountMap: Record<number, number> = {};
+  (exams ?? []).forEach((e) => { examCountMap[e.subject] = (examCountMap[e.subject] ?? 0) + 1; });
 
   const mutation = useMutation({
     mutationFn: () => adminApi.createSubject({ name, description }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subjects'] });
-      setShowForm(false);
       setName('');
       setDescription('');
+      setFormError('');
     },
     onError: () => setFormError('Failed to create subject'),
   });
 
   return (
-    <Shell
-      user={user}
-      nav={nav}
-      headerRight={
-        <button
-          onClick={() => setShowForm(true)}
-          style={{ padding: '5px 12px', border: '1px solid var(--accent)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
-        >
-          + {t('newSubject')}
-        </button>
-      }
-    >
-      <h1 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{t('subjects')}</h1>
+    <Shell user={user} nav={nav}>
+      <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 360px' }}>
+        {/* Left pane */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)', minWidth: 0 }}>
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--line)' }}>
+                  <Th w={44}>{t('id')}</Th>
+                  <Th>{t('name')}</Th>
+                  <Th>{t('description')}</Th>
+                  <Th w={110}>{t('date')}</Th>
+                  <Th w={70} align="right">{t('exams')}</Th>
+                  <Th w={32} />
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <SkeletonRows cols={6} />
+                ) : !data?.length ? (
+                  <EmptyRow cols={6} label={t('noData')} />
+                ) : (
+                  data.map((s) => (
+                    <tr
+                      key={s.id}
+                      onClick={() => navigate(`/admin/exams?subject=${s.id}`)}
+                      style={{ borderBottom: '1px solid var(--line)', cursor: 'pointer' }}
+                    >
+                      <Td mono>#{s.id}</Td>
+                      <Td>{s.name}</Td>
+                      <Td>{s.description || <span style={{ color: 'var(--ink-4)' }}>—</span>}</Td>
+                      <Td mono>{s.created_at.slice(0, 10)}</Td>
+                      <Td mono align="right">{examCountMap[s.id] ?? 0}</Td>
+                      <Td align="right"><span style={{ color: 'var(--ink-4)' }}>→</span></Td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      {showForm && (
-        <div style={{ border: '1px solid var(--line)', padding: 16, marginBottom: 20, maxWidth: 400 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Right pane — create form */}
+        <aside style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>{t('newSubject')}</div>
+          </div>
+
+          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
             <FormField label={t('name')}>
-              <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} />
+              <input
+                style={{ ...inputStyle, fontFamily: mono }}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </FormField>
             <FormField label={t('description')}>
-              <input style={inputStyle} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <textarea
+                style={{ ...inputStyle, height: 'auto', minHeight: 60, resize: 'vertical', whiteSpace: 'pre-wrap' }}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </FormField>
             {formError && <span style={{ fontSize: 12, color: 'var(--wrong)' }}>{formError}</span>}
-            <div style={{ display: 'flex', gap: 8 }}>
+
+            <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => { setName(''); setDescription(''); setFormError(''); }}
+                style={{ ...btnGhost, flex: 1 }}
+              >
+                {t('cancel')}
+              </button>
               <button
                 onClick={() => mutation.mutate()}
                 disabled={mutation.isPending}
-                style={{ padding: '5px 12px', background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer' }}
+                style={{ ...btnPrimary, flex: 1 }}
               >
                 {t('create')}
               </button>
-              <button onClick={() => setShowForm(false)} style={{ padding: '5px 12px', border: '1px solid var(--line-2)', fontSize: 12, cursor: 'pointer', color: 'var(--ink-2)' }}>
-                {t('cancel')}
-              </button>
             </div>
           </div>
-        </div>
-      )}
-
-      <table>
-        <thead>
-          <tr>
-            <Th>ID</Th>
-            <Th>{t('name')}</Th>
-            <Th>{t('description')}</Th>
-            <Th>{t('date')}</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <SkeletonRows cols={4} />
-          ) : !data?.length ? (
-            <EmptyRow cols={4} label={t('noData')} />
-          ) : (
-            data.map((s) => (
-              <tr key={s.id}>
-                <Td mono>{s.id}</Td>
-                <Td>{s.name}</Td>
-                <Td>{s.description || '—'}</Td>
-                <Td mono>{s.created_at.slice(0, 10)}</Td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-      <EndpointFooter method="GET" path="/api/admin/subjects/" />
+        </aside>
+      </div>
     </Shell>
   );
 }

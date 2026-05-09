@@ -10,7 +10,7 @@ export function RoleBadge({ role }: { role: Role }) {
       padding: '1px 6px',
       fontSize: 11,
       border: '1px solid var(--line-2)',
-      color: 'var(--accent)',
+      color: 'var(--ink-2)',
     }}>
       {t(`role_${role}`)}
     </span>

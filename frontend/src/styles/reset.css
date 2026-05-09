@@ -34,6 +34,7 @@ input, select, textarea {
   background: var(--bg);
   border: 1px solid var(--line-2);
   outline: none;
+  border-radius: 0;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -43,22 +44,6 @@ input:focus, select:focus, textarea:focus {
 table {
   border-collapse: collapse;
   width: 100%;
-}
-
-th, td {
-  text-align: left;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--line);
-  font-variant-numeric: tabular-nums;
-}
-
-th {
-  font-weight: 500;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ink-3);
-  background: var(--ink-bg-active);
 }
 
 code, pre, .mono {

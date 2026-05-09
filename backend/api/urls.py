@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CreateUserView, CustomTokenObtainPairView,
     SubjectViewSet, ExamViewSet, QuestionViewSet, StudentAnswerViewSet,
-    TeacherWrongQuestionsView, TeacherQuestionDetailView,
+    TeacherQuestionsView, TeacherQuestionDetailView,
     StudentExamListView, StudentExamQuestionsView, StudentWrongQuestionsView,
 )
 
@@ -22,7 +22,7 @@ urlpatterns = [
 
     path('admin/students/', CreateUserView.as_view(), name='create-student'),
 
-    path('teacher/wrong-questions/', TeacherWrongQuestionsView.as_view(), name='teacher-wrong-questions'),
+    path('teacher/questions/', TeacherQuestionsView.as_view(), name='teacher-questions'),
     path('teacher/questions/<int:pk>/', TeacherQuestionDetailView.as_view(), name='teacher-question-detail'),
 
     path('student/exams/', StudentExamListView.as_view(), name='student-exams'),

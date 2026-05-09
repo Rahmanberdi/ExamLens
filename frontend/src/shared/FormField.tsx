@@ -3,17 +3,29 @@ import React from 'react';
 interface FormFieldProps {
   label: string;
   children: React.ReactNode;
+  hint?: string;
   error?: string;
 }
 
-export function FormField({ label, children, error }: FormFieldProps) {
+export function FormField({ label, children, hint, error }: FormFieldProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div>
+      <div style={{
+        fontSize: 11,
+        color: 'var(--ink-3)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+        marginBottom: 6,
+      }}>
         {label}
-      </label>
+      </div>
       {children}
-      {error && <span style={{ fontSize: 11, color: 'var(--wrong)' }}>{error}</span>}
+      {hint && (
+        <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>{hint}</div>
+      )}
+      {error && (
+        <div style={{ fontSize: 11, color: 'var(--wrong)', marginTop: 4 }}>{error}</div>
+      )}
     </div>
   );
 }

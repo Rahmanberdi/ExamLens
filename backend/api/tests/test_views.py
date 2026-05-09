@@ -5,7 +5,7 @@ from api.models import User
 
 class UserRegistrationTest(APITestCase):
     def setUp(self):
-        self.url = reverse('register')
+        self.url = reverse('create-student')
         self.admin_user = User.objects.create_user(username='admin', password='password123', role='admin')
         self.teacher_user = User.objects.create_user(username='teacher', password='password123', role='teacher')
         self.student_user = User.objects.create_user(username='student', password='password123', role='student')

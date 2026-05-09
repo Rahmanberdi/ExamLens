@@ -4,7 +4,7 @@ type QType = 'single_choice' | 'multiple_choice' | 'true_false' | 'fill_blank';
 
 const typeKey: Record<QType, string> = {
   single_choice: 'qt_short_single',
-  multiple_choice: 'qt_short_multiple',
+  multiple_choice: 'qt_short_multi',
   true_false: 'qt_short_tf',
   fill_blank: 'qt_short_fill',
 };

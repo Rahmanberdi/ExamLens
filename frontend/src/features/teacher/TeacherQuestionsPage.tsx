@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { adminApi } from '../../api/admin';
+import { teacherApi } from '../../api/teacher';
 import { Shell } from '../../shared/Shell';
 import { TypeBadge } from '../../shared/TypeBadge';
 import { getPayload } from '../../api/auth';
-import { useAdminNav } from './adminNav';
-import { btnPrimary } from '../../shared/styles';
+import { useTeacherNav } from './teacherNav';
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -76,20 +75,25 @@ function Segmented<T extends string>({ options, value, onChange }: SegmentedProp
   );
 }
 
-export function AdminQuestions() {
+export function TeacherQuestionsPage() {
   const { t } = useTranslation();
   const user = getPayload()!;
-  const nav = useAdminNav();
+  const nav = useTeacherNav();
   const [search, setSearch] = useSearchParams();
 
+  // List filters
   const [keyword, setKeyword] = useState(search.get('keyword') ?? '');
   const [subjectFilter, setSubjectFilter] = useState(search.get('subject') ?? '');
   const [examFilter, setExamFilter] = useState(search.get('exam') ?? '');
+
+  // Detail-pane filter (which students to show)
   const [studentFilter, setStudentFilter] = useState<StudentFilter>('all');
+
   const [selected, setSelected] = useState<number | null>(
     search.get('q') ? Number(search.get('q')) : null
   );
 
+  // Persist filters to URL
   useEffect(() => {
     const next = new URLSearchParams(search);
     keyword ? next.set('keyword', keyword) : next.delete('keyword');
@@ -99,110 +103,55 @@ export function AdminQuestions() {
     if (next.toString() !== search.toString()) setSearch(next, { replace: true });
   }, [keyword, subjectFilter, examFilter, selected, search, setSearch]);
 
-  const { data: questions, isLoading } = useQuery({ queryKey: ['questions'], queryFn: adminApi.getQuestions });
-  const { data: exams } = useQuery({ queryKey: ['exams'], queryFn: adminApi.getExams });
-  const { data: subjects } = useQuery({ queryKey: ['subjects'], queryFn: adminApi.getSubjects });
-  const { data: answers } = useQuery({ queryKey: ['answers'], queryFn: adminApi.getAnswers });
-  const { data: students } = useQuery({ queryKey: ['students'], queryFn: adminApi.getStudents });
+  const { data: subjects } = useQuery({ queryKey: ['teacher-subjects'], queryFn: teacherApi.getSubjects });
+  const { data: exams } = useQuery({ queryKey: ['teacher-exams'], queryFn: teacherApi.getExams });
+
+  const { data: questions, isLoading } = useQuery({
+    queryKey: ['teacher-questions', { keyword, subjectFilter, examFilter }],
+    queryFn: () => teacherApi.getQuestions({
+      keyword: keyword || undefined,
+      subject: subjectFilter || undefined,
+      exam: examFilter || undefined,
+    }),
+  });
+
+  const { data: detail } = useQuery({
+    queryKey: ['teacher-question-detail', selected],
+    queryFn: () => teacherApi.getQuestionDetail(selected!),
+    enabled: selected != null,
+  });
+
+  // Clear selection if it leaves the filtered list
+  useEffect(() => {
+    if (selected != null && questions && !questions.some((q) => q.id === selected)) {
+      setSelected(null);
+    }
+  }, [questions, selected]);
 
   const handleSearch = useDebounce((v: string) => setKeyword(v), 300);
-
-  // Build exam→subject map for subject filtering
-  const examSubjectMap = useMemo(
-    () => Object.fromEntries((exams ?? []).map((e) => [e.id, e.subject])),
-    [exams]
-  );
-
-  // Per-question answer counts, computed from admin answers
-  const countMap = useMemo(() => {
-    const m: Record<number, { wrong: number; correct: number; total: number }> = {};
-    (answers ?? []).forEach((a) => {
-      if (!m[a.question]) m[a.question] = { wrong: 0, correct: 0, total: 0 };
-      m[a.question].total += 1;
-      if (a.is_correct) m[a.question].correct += 1;
-      else m[a.question].wrong += 1;
-    });
-    return m;
-  }, [answers]);
-
-  // Student lookup for detail pane
-  const studentMap = useMemo(
-    () => Object.fromEntries((students ?? []).map((s) => [s.id, s])),
-    [students]
-  );
 
   const examOptions = useMemo(() => {
     if (!subjectFilter) return exams ?? [];
     return (exams ?? []).filter((e) => String(e.subject) === subjectFilter);
   }, [exams, subjectFilter]);
 
-  const filtered = useMemo(() => {
-    const kw = keyword.toLowerCase();
-    return (questions ?? []).filter((q) => {
-      const matchText = !kw ||
-        q.content.toLowerCase().includes(kw) ||
-        String(q.question_number).includes(kw);
-      const matchExam = !examFilter || String(q.exam) === examFilter;
-      const matchSubject = !subjectFilter || String(examSubjectMap[q.exam]) === subjectFilter;
-      return matchText && matchExam && matchSubject;
-    });
-  }, [questions, keyword, examFilter, subjectFilter, examSubjectMap]);
-
-  // Clear selection if it leaves the filtered list
-  useEffect(() => {
-    if (selected != null && filtered.length && !filtered.some((q) => q.id === selected)) {
-      setSelected(null);
-    }
-  }, [filtered, selected]);
-
-  const detail = selected != null ? (questions ?? []).find((q) => q.id === selected) : null;
-
-  // Build student answer list for detail pane
-  const detailAnswers = useMemo(() => {
-    if (!detail) return [];
-    return (answers ?? [])
-      .filter((a) => a.question === detail.id)
-      .map((a) => {
-        const stu = studentMap[a.student];
-        return {
-          id: a.id,
-          student_id: a.student,
-          username: stu?.username ?? String(a.student),
-          real_name: stu?.real_name ?? '',
-          class_number: stu?.class_number ?? '',
-          selected_answer: a.selected_answer,
-          is_correct: a.is_correct,
-          score_obtained: a.score_obtained,
-          submitted_at: a.submitted_at,
-        };
-      });
-  }, [detail, answers, studentMap]);
-
-  const wrongAnswers = detailAnswers.filter((a) => !a.is_correct);
-  const correctAnswers = detailAnswers.filter((a) => a.is_correct);
+  // Detail-pane derived values
+  const allAnswers = detail?.student_answers ?? [];
+  const wrongAnswers = allAnswers.filter((a) => !a.is_correct);
+  const correctAnswers = allAnswers.filter((a) => a.is_correct);
   const visibleAnswers =
     studentFilter === 'wrong' ? wrongAnswers
     : studentFilter === 'correct' ? correctAnswers
-    : detailAnswers;
+    : allAnswers;
 
   return (
-    <Shell
-      user={user}
-      nav={nav}
-      headerRight={
-        <Link
-          to="/admin/questions/new"
-          style={{ ...btnPrimary, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
-        >
-          + {t('newQuestion')}
-        </Link>
-      }
-    >
+    <Shell user={user} nav={nav}>
       <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 460px' }}>
-        {/* Left pane */}
+        {/* Left pane — list */}
         <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)', minWidth: 0 }}>
           {/* Filter strip */}
           <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--line)' }}>
+            {/* Search */}
             <div style={{
               height: 34,
               border: '1px solid var(--line-2)',
@@ -210,6 +159,7 @@ export function AdminQuestions() {
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              fontSize: 13,
               fontFamily: mono,
             }}>
               <span style={{ color: 'var(--ink-4)' }}>⌕</span>
@@ -229,13 +179,18 @@ export function AdminQuestions() {
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder={t('keywordHint')}
               />
+              <span style={{ color: 'var(--ink-4)', fontSize: 11 }}>{t('pressEnter')}</span>
             </div>
 
+            {/* Filters row */}
             <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <select
                 style={pillStyle}
                 value={subjectFilter}
-                onChange={(e) => { setSubjectFilter(e.target.value); setExamFilter(''); }}
+                onChange={(e) => {
+                  setSubjectFilter(e.target.value);
+                  setExamFilter('');
+                }}
               >
                 <option value="">{t('subject')}: —</option>
                 {(subjects ?? []).map((s) => (
@@ -250,7 +205,7 @@ export function AdminQuestions() {
               </select>
               <span style={{ flex: 1 }} />
               <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: mono }}>
-                {filtered.length}
+                {questions?.length ?? 0}
               </span>
             </div>
 
@@ -261,12 +216,11 @@ export function AdminQuestions() {
             {isLoading && (
               <div style={{ padding: 24, color: 'var(--ink-4)', fontSize: 13 }}>{t('loading')}</div>
             )}
-            {!isLoading && !filtered.length && (
+            {!isLoading && !questions?.length && (
               <div style={{ padding: 24, color: 'var(--ink-4)', fontSize: 13 }}>{t('noData')}</div>
             )}
-            {filtered.map((q) => {
+            {questions?.map((q) => {
               const isSelected = selected === q.id;
-              const counts = countMap[q.id] ?? { wrong: 0, correct: 0, total: 0 };
               return (
                 <div
                   key={q.id}
@@ -287,9 +241,9 @@ export function AdminQuestions() {
                     <TypeBadge type={q.question_type} />
                     <span style={{ flex: 1 }} />
                     <span style={{ fontSize: 11, fontFamily: mono, color: 'var(--ink-3)' }}>
-                      <span style={{ color: 'var(--wrong)' }}>{counts.wrong}</span>
+                      <span style={{ color: 'var(--wrong)' }}>{q.wrong_count}</span>
                       <span style={{ color: 'var(--ink-4)' }}> / </span>
-                      <span style={{ color: 'var(--ink)' }}>{counts.total}</span>
+                      <span style={{ color: 'var(--ink)' }}>{q.total_count}</span>
                       <span style={{ color: 'var(--ink-4)' }}> {t('wrong').toLowerCase()}</span>
                     </span>
                   </div>
@@ -307,30 +261,6 @@ export function AdminQuestions() {
 
         {/* Right pane — detail */}
         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-          <div style={{
-            padding: '14px 24px',
-            borderBottom: '1px solid var(--line)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-          }}>
-            {selected != null && (
-              <Link
-                to={`/admin/questions/${selected}/edit`}
-                style={{
-                  fontSize: 12,
-                  padding: '4px 12px',
-                  border: '1px solid var(--line-2)',
-                  color: 'var(--ink)',
-                  textDecoration: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                }}
-              >
-                {t('edit')}
-              </Link>
-            )}
-          </div>
 
           <div style={{ flex: 1, padding: 24 }}>
             {selected == null ? (
@@ -413,7 +343,7 @@ export function AdminQuestions() {
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{t('student')}</div>
                     <Segmented<StudentFilter>
                       options={[
-                        { value: 'all', label: `${t('total')} ${detailAnswers.length}` },
+                        { value: 'all', label: `${t('total')} ${allAnswers.length}` },
                         { value: 'wrong', label: `${t('wrong')} ${wrongAnswers.length}` },
                         { value: 'correct', label: `${t('correct')} ${correctAnswers.length}` },
                       ]}

@@ -8,8 +8,11 @@ import { AdminQuestions } from '../features/admin/AdminQuestions';
 import { AdminQuestionEditor } from '../features/admin/AdminQuestionEditor';
 import { AdminAnswers } from '../features/admin/AdminAnswers';
 import { AdminStudents } from '../features/admin/AdminStudents';
-import { TeacherWrongQuestions } from '../features/teacher/TeacherWrongQuestions';
+import { TeacherQuestionsPage } from '../features/teacher/TeacherQuestionsPage';
+import { TeacherSubjects } from '../features/teacher/TeacherSubjects';
+import { TeacherExams } from '../features/teacher/TeacherExams';
 import { StudentExams } from '../features/student/StudentExams';
+import { StudentSubjects } from '../features/student/StudentSubjects';
 import { StudentExamDetail } from '../features/student/StudentExamDetail';
 import { StudentWrong } from '../features/student/StudentWrong';
 import { getPayload } from '../api/auth';
@@ -37,10 +40,13 @@ export function AppRoutes() {
       <Route path="/admin/answers" element={<AuthGuard role="admin"><AdminAnswers /></AuthGuard>} />
       <Route path="/admin/students" element={<AuthGuard role="admin"><AdminStudents /></AuthGuard>} />
 
-      <Route path="/teacher" element={<AuthGuard role="teacher"><TeacherWrongQuestions /></AuthGuard>} />
-      <Route path="/teacher/questions/:id" element={<AuthGuard role="teacher"><TeacherWrongQuestions /></AuthGuard>} />
+      <Route path="/teacher" element={<AuthGuard role="teacher"><TeacherQuestionsPage /></AuthGuard>} />
+      <Route path="/teacher/questions" element={<Navigate to="/teacher" replace />} />
+      <Route path="/teacher/subjects" element={<AuthGuard role="teacher"><TeacherSubjects /></AuthGuard>} />
+      <Route path="/teacher/exams" element={<AuthGuard role="teacher"><TeacherExams /></AuthGuard>} />
 
       <Route path="/student" element={<AuthGuard role="student"><StudentExams /></AuthGuard>} />
+      <Route path="/student/subjects" element={<AuthGuard role="student"><StudentSubjects /></AuthGuard>} />
       <Route path="/student/exams/:examId" element={<AuthGuard role="student"><StudentExamDetail /></AuthGuard>} />
       <Route path="/student/wrong" element={<AuthGuard role="student"><StudentWrong /></AuthGuard>} />
 

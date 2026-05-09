@@ -17,6 +17,19 @@ node_modules/
 .idea/
 .vscode/
 *.iml
+.DS_Store
+
+# Design & Reference
+design_reference/
+
+# AI Tools
+.claude/
+
+# Logs
+*.log
+
+# Documentation
+*.md
 
 .vercel
 .env*.local

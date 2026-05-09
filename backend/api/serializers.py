@@ -49,21 +49,45 @@ class StudentAnswerSerializer(serializers.ModelSerializer):
         fields = ('id', 'question', 'student', 'selected_answer', 'is_correct', 'score_obtained', 'submitted_at')
         read_only_fields = ('is_correct', 'score_obtained', 'submitted_at')
 
-class WrongAnswerStudentSerializer(serializers.ModelSerializer):
+class TeacherStudentAnswerSerializer(serializers.ModelSerializer):
+    """One student's submission for a question, with student fields inlined.
+
+    Used by the teacher detail view so a teacher can see who answered what (correct or wrong).
+    """
+    student_id = serializers.IntegerField(source='student.id', read_only=True)
+    username = serializers.CharField(source='student.username', read_only=True)
+    real_name = serializers.CharField(source='student.real_name', read_only=True)
+    class_number = serializers.CharField(source='student.class_number', read_only=True)
+
     class Meta:
-        model = User
-        fields = ('id','username','real_name')
+        model = StudentAnswer
+        fields = ('id', 'student_id', 'username', 'real_name', 'class_number',
+                  'selected_answer', 'is_correct', 'score_obtained', 'submitted_at')
 
 class TeacherQuestionSerializer(serializers.ModelSerializer):
-    wrong_answer_students = serializers.SerializerMethodField()
+    student_answers = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = ('id', 'exam', 'question_number', 'question_type', 'content', 'options', 'correct_answer', 'max_score', 'wrong_answer_students')
+        fields = ('id', 'exam', 'question_number', 'question_type', 'content',
+                  'options', 'correct_answer', 'max_score', 'student_answers')
 
-    def get_wrong_answer_students(self, obj):
-        wrong_answer_students = obj.answers.filter(is_correct=False).select_related('student')
-        return WrongAnswerStudentSerializer([a.student for a in wrong_answer_students], many=True).data
+    def get_student_answers(self, obj):
+        answers = obj.answers.all().select_related('student').order_by('is_correct', 'submitted_at')
+        return TeacherStudentAnswerSerializer(answers, many=True).data
+
+
+class TeacherQuestionListSerializer(serializers.ModelSerializer):
+    """Question summary for the teacher list view, with answer-count annotations."""
+    wrong_count = serializers.IntegerField(read_only=True)
+    correct_count = serializers.IntegerField(read_only=True)
+    total_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ('id', 'exam', 'question_number', 'question_type', 'content',
+                  'options', 'correct_answer', 'max_score',
+                  'wrong_count', 'correct_count', 'total_count')
 
 class StudentExamSerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source='subject.name', read_only=True)
