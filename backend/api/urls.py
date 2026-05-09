@@ -8,6 +8,8 @@ from .views import (
     TeacherQuestionsView, TeacherQuestionDetailView,
     StudentExamListView, StudentExamQuestionsView, StudentWrongQuestionsView,
 )
+from .import_views import ImportQuestionsView, ImportAnswersView
+from .ai_views import ExamAiSummaryView
 
 router = DefaultRouter()
 router.register('admin/subjects', SubjectViewSet, basename='subject')
@@ -21,6 +23,10 @@ urlpatterns = [
     path('token/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 
     path('admin/students/', CreateUserView.as_view(), name='create-student'),
+    path('admin/import/questions/', ImportQuestionsView.as_view(), name='import-questions'),
+    path('admin/import/answers/', ImportAnswersView.as_view(), name='import-answers'),
+    path('admin/exams/<int:exam_id>/ai-summary/', ExamAiSummaryView.as_view(), name='admin-exam-ai-summary'),
+    path('teacher/exams/<int:exam_id>/ai-summary/', ExamAiSummaryView.as_view(), name='teacher-exam-ai-summary'),
 
     path('teacher/questions/', TeacherQuestionsView.as_view(), name='teacher-questions'),
     path('teacher/questions/<int:pk>/', TeacherQuestionDetailView.as_view(), name='teacher-question-detail'),

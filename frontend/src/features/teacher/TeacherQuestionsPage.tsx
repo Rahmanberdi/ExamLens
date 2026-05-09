@@ -10,6 +10,11 @@ import { useTeacherNav } from './teacherNav';
 
 const mono = "'JetBrains Mono', monospace";
 
+function getKP(kp: Record<string, string> | undefined, lang: string): string {
+  if (!kp || !Object.keys(kp).length) return '';
+  return kp[lang] || kp['zh'] || kp['en'] || Object.values(kp)[0] || '';
+}
+
 const pillStyle: React.CSSProperties = {
   height: 30,
   padding: '0 10px',
@@ -76,7 +81,7 @@ function Segmented<T extends string>({ options, value, onChange }: SegmentedProp
 }
 
 export function TeacherQuestionsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = getPayload()!;
   const nav = useTeacherNav();
   const [search, setSearch] = useSearchParams();
@@ -105,6 +110,14 @@ export function TeacherQuestionsPage() {
 
   const { data: subjects } = useQuery({ queryKey: ['teacher-subjects'], queryFn: teacherApi.getSubjects });
   const { data: exams } = useQuery({ queryKey: ['teacher-exams'], queryFn: teacherApi.getExams });
+
+  const lang = i18n.language;
+  const { data: aiSummaryData, isFetching: summaryLoading } = useQuery({
+    queryKey: ['exam-ai-summary', examFilter, lang],
+    queryFn: () => teacherApi.getExamAiSummary(Number(examFilter), lang),
+    enabled: !!examFilter,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ['teacher-questions', { keyword, subjectFilter, examFilter }],
@@ -211,6 +224,26 @@ export function TeacherQuestionsPage() {
 
           </div>
 
+          {/* AI summary panel — shown when an exam is selected */}
+          {examFilter && (
+            <div style={{
+              padding: '12px 24px',
+              borderBottom: '1px solid var(--line)',
+              background: 'var(--ink-bg-active)',
+            }}>
+              <div style={{ fontSize: 10, color: 'var(--ink-4)', fontFamily: mono, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                ✦ {t('aiSummary')}
+              </div>
+              {summaryLoading ? (
+                <div style={{ fontSize: 12, color: 'var(--ink-4)', fontFamily: mono }}>{t('loading')}</div>
+              ) : aiSummaryData?.summary ? (
+                <div style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.6 }}>
+                  {aiSummaryData.summary}
+                </div>
+              ) : null}
+            </div>
+          )}
+
           {/* Card list */}
           <div style={{ flex: 1, overflow: 'auto' }}>
             {isLoading && (
@@ -250,8 +283,18 @@ export function TeacherQuestionsPage() {
                   <div style={{ fontSize: 14, marginBottom: 6, fontWeight: isSelected ? 500 : 400 }}>
                     {q.content}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: mono }}>
-                    correct: {JSON.stringify(q.correct_answer)} · max {q.max_score}
+                  <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: mono, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <span>correct: {JSON.stringify(q.correct_answer)} · max {q.max_score}</span>
+                    {getKP(q.knowledge_point, lang) && (
+                      <span style={{
+                        padding: '1px 6px',
+                        border: '1px solid var(--line-2)',
+                        color: 'var(--ink-2)',
+                        fontSize: 10,
+                      }}>
+                        {getKP(q.knowledge_point, lang)}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -279,9 +322,16 @@ export function TeacherQuestionsPage() {
                   </span>
                 </div>
 
-                <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4, marginBottom: 16 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4, marginBottom: getKP(detail.knowledge_point, lang) ? 8 : 16 }}>
                   {detail.content}
                 </div>
+                {getKP(detail.knowledge_point, lang) && (
+                  <div style={{ fontSize: 11, fontFamily: mono, color: 'var(--ink-3)', marginBottom: 12 }}>
+                    <span style={{ padding: '2px 8px', border: '1px solid var(--line-2)', color: 'var(--ink-2)' }}>
+                      {getKP(detail.knowledge_point, lang)}
+                    </span>
+                  </div>
+                )}
 
                 {Object.keys(detail.options).length > 0 && (
                   <div style={{ borderTop: '1px solid var(--line)' }}>

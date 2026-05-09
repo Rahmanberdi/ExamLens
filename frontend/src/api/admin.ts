@@ -25,6 +25,7 @@ export interface Question {
   options: Record<string, string>;
   correct_answer: (string | boolean)[];
   max_score: string;
+  knowledge_point?: Record<string, string>;
 }
 
 export interface StudentAnswer {
@@ -89,4 +90,7 @@ export const adminApi = {
     form.append('file', file);
     return client.post<ImportResult>('/admin/import/answers/', form).then((r) => r.data);
   },
+
+  getExamAiSummary: (examId: number, lang: string) =>
+    client.get<{ summary: string }>(`/admin/exams/${examId}/ai-summary/`, { params: { lang } }).then((r) => r.data),
 };

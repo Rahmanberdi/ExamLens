@@ -129,5 +129,9 @@
   "autoCreated": "auto-created",
   "mustExist": "must exist",
   "required": "required",
-  "multipleAnswerHint": "multiple choice answers: A|C"
+  "multipleAnswerHint": "multiple choice answers: A|C",
+  "knowledgePoint": "Knowledge Point",
+  "knowledgePointHint": "auto-filled by AI on save",
+  "knowledgePointAuto": "leave blank — AI will fill this",
+  "aiSummary": "AI Summary"
 }

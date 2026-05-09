@@ -31,8 +31,14 @@ interface QuestionFormProps {
   error: string;
 }
 
+
+function getKP(kp: Record<string, string> | undefined, lang: string): string {
+  if (!kp || !Object.keys(kp).length) return '';
+  return kp[lang] || kp['zh'] || kp['en'] || Object.values(kp)[0] || '';
+}
+
 function QuestionForm({ existing, exams, subjects, onSave, isPending, error }: QuestionFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [examId, setExamId] = useState(existing ? String(existing.exam) : '');
   const [qNumber, setQNumber] = useState(existing ? String(existing.question_number) : '');
@@ -151,6 +157,25 @@ function QuestionForm({ existing, exams, subjects, onSave, isPending, error }: Q
           />
         </FormField>
       </div>
+
+      {/* Knowledge point — AI-generated, read-only */}
+      {existing?.knowledge_point && Object.keys(existing.knowledge_point).length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            {t('knowledgePoint')}
+          </div>
+          <div style={{
+            padding: '8px 10px',
+            border: '1px solid var(--line-2)',
+            background: 'var(--ink-bg-active)',
+            fontSize: 12,
+            fontFamily: mono,
+            color: 'var(--ink-2)',
+          }}>
+            {getKP(existing.knowledge_point, i18n.language)}
+          </div>
+        </div>
+      )}
 
       {/* Options */}
       {showOptions && (

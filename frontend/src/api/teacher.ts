@@ -52,4 +52,7 @@ export const teacherApi = {
   // Read-only browse — backed by the admin viewsets, gated server-side via IsAdminOrTeacherReadOnly
   getSubjects: () => client.get<Subject[]>('/admin/subjects/').then((r) => r.data),
   getExams: () => client.get<Exam[]>('/admin/exams/').then((r) => r.data),
+
+  getExamAiSummary: (examId: number, lang: string) =>
+    client.get<{ summary: string }>(`/teacher/exams/${examId}/ai-summary/`, { params: { lang } }).then((r) => r.data),
 };

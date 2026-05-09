@@ -129,5 +129,9 @@
   "autoCreated": "不存在则自动创建",
   "mustExist": "必须已存在",
   "required": "必填",
-  "multipleAnswerHint": "多选答案用竖线分隔，如 A|C"
+  "multipleAnswerHint": "多选答案用竖线分隔，如 A|C",
+  "knowledgePoint": "知识点",
+  "knowledgePointHint": "保存后由 AI 自动填写",
+  "knowledgePointAuto": "留空，AI 将自动生成",
+  "aiSummary": "AI 摘要"
 }

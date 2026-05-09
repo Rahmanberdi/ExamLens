@@ -35,7 +35,7 @@ class ExamSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('id', 'exam', 'question_number', 'question_type', 'content', 'options', 'correct_answer', 'max_score')
+        fields = ('id', 'exam', 'question_number', 'question_type', 'content', 'options', 'correct_answer', 'max_score', 'knowledge_point')
 
 
 class StudentQuestionSerializer(serializers.ModelSerializer):
@@ -70,7 +70,7 @@ class TeacherQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ('id', 'exam', 'question_number', 'question_type', 'content',
-                  'options', 'correct_answer', 'max_score', 'student_answers')
+                  'options', 'correct_answer', 'max_score', 'knowledge_point', 'student_answers')
 
     def get_student_answers(self, obj):
         answers = obj.answers.all().select_related('student').order_by('is_correct', 'submitted_at')
@@ -86,7 +86,7 @@ class TeacherQuestionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ('id', 'exam', 'question_number', 'question_type', 'content',
-                  'options', 'correct_answer', 'max_score',
+                  'options', 'correct_answer', 'max_score', 'knowledge_point',
                   'wrong_count', 'correct_count', 'total_count')
 
 class StudentExamSerializer(serializers.ModelSerializer):

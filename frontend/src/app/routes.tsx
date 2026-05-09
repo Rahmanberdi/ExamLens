@@ -22,7 +22,7 @@ function RootRedirect() {
   const p = getPayload();
   if (!p) return <Navigate to="/login" replace />;
   if (p.role === 'admin') return <Navigate to="/admin" replace />;
-  if (p.role === 'teacher') return <Navigate to="/teacher" replace />;
+  if (p.role === 'teacher') return <Navigate to="/teacher/exams" replace />;
   return <Navigate to="/student" replace />;
 }
 

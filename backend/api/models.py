@@ -30,6 +30,7 @@ class Exam(models.Model):
     name = models.CharField(max_length=200)
     exam_date = models.DateField()
     total_score = models.DecimalField(max_digits=5, decimal_places=2)
+    ai_summary = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,6 +51,7 @@ class Question(models.Model):
     options = models.JSONField(default=dict, blank=True)
     correct_answer = models.JSONField(default=list)
     max_score = models.DecimalField(max_digits=5, decimal_places=2)
+    knowledge_point = models.JSONField(default=dict, blank=True)
 
     class Meta:
         unique_together = [('exam', 'question_number')]

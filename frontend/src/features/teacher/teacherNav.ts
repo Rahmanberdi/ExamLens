@@ -12,8 +12,8 @@ export function useTeacherNav() {
   const { data: exams } = useQuery({ queryKey: ['teacher-exams'], queryFn: teacherApi.getExams });
 
   return [
-    { label: t('subjects'), to: '/teacher/subjects', count: subjects?.length },
     { label: t('exams'), to: '/teacher/exams', count: exams?.length },
+    { label: t('subjects'), to: '/teacher/subjects', count: subjects?.length },
     { label: t('questions'), to: '/teacher', count: questions?.length },
   ];
 }

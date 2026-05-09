@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User, Subject, Exam, Question, StudentAnswer
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsAdminOrTeacherReadOnly
+from .ai_utils import generate_knowledge_points_all_langs, refresh_exam_summary_all_langs
 from .serializers import (
     UserSerializer, CustomTokenObtainPairSerializer,
     SubjectSerializer, ExamSerializer, QuestionSerializer, StudentAnswerSerializer,
@@ -38,10 +39,39 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [IsAdminOrTeacherReadOnly]
 
+    def _fill_knowledge_point(self, question):
+        if not question.knowledge_point:
+            kp = generate_knowledge_points_all_langs(question.content, question.question_type)
+            if kp:
+                question.knowledge_point = kp
+                question.save(update_fields=['knowledge_point'])
+
+    def perform_create(self, serializer):
+        question = serializer.save()
+        self._fill_knowledge_point(question)
+
+    def perform_update(self, serializer):
+        question = serializer.save()
+        self._fill_knowledge_point(question)
+
 class StudentAnswerViewSet(viewsets.ModelViewSet):
     queryset = StudentAnswer.objects.select_related('question__exam__subject','student')
     serializer_class = StudentAnswerSerializer
     permission_classes = [IsAdmin]
+
+    def _trigger_summary(self, answer):
+        try:
+            refresh_exam_summary_all_langs(answer.question.exam_id)
+        except Exception:
+            pass
+
+    def perform_create(self, serializer):
+        answer = serializer.save()
+        self._trigger_summary(answer)
+
+    def perform_update(self, serializer):
+        answer = serializer.save()
+        self._trigger_summary(answer)
 
 
 # --- Teacher views ---

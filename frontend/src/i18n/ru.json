@@ -129,5 +129,9 @@
   "autoCreated": "создаётся автоматически",
   "mustExist": "должен существовать",
   "required": "обязательно",
-  "multipleAnswerHint": "несколько ответов через |, напр. A|C"
+  "multipleAnswerHint": "несколько ответов через |, напр. A|C",
+  "knowledgePoint": "Тема",
+  "knowledgePointHint": "заполняется AI при сохранении",
+  "knowledgePointAuto": "оставьте пустым — AI заполнит автоматически",
+  "aiSummary": "AI Сводка"
 }
